@@ -1,5 +1,5 @@
 import aiohttp
-from ...core.settings import get_settings
+from ..core.settings import get_settings
 
 settings = get_settings()
 
@@ -14,7 +14,7 @@ headers_wb = {
 
 wb_url = settings.parse_url
 
-async def main(search_phrase: str = None):
+async def parser(search_phrase: str) -> int:
     async with aiohttp.ClientSession() as session:
         async with session.get(wb_url.format(search_phrase)) as response:
             response_json = await response.json(content_type='text/plain')
