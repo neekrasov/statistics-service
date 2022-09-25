@@ -1,1 +1,2 @@
-from .statistic import Statistic
+from .statistics import Statistics
+from .task import Task

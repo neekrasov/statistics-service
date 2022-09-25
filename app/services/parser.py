@@ -18,4 +18,4 @@ async def parser(search_phrase: str) -> int:
     async with aiohttp.ClientSession() as session:
         async with session.get(wb_url.format(search_phrase)) as response:
             response_json = await response.json(content_type='text/plain')
-            return response_json['data']['total']
+            return int(response_json['data']['total'])

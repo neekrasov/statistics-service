@@ -1,2 +1,3 @@
-from .base import BaseRepository
-from .statistics import StatisticRepository
+from .base import BaseDAO
+from .statistics import StatisticsDao
+from .task import TaskDao
