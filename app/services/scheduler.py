@@ -46,16 +46,17 @@ async def create_search_task(task_obj: Task, stat_dao: StatisticsDao) -> Statist
 
 
 async def on_startup_sheduler_handler():
-    # session_gen = get_session()
-    # session_gen2 = get_session()
-    # async_session2 = await anext(session_gen2)
-    # task_dao = TaskDao(async_session2)
-    # task_objects = await get_all_tasks(task_dao)
+    session_gen2 = get_session()
+    async_session2 = await anext(session_gen2)
+    task_dao = TaskDao(async_session2)
+    
+    task_objects = await get_all_tasks(task_dao)
 
-    # for task_obj in task_objects:
-    #     if task_obj.status == TaskStatus.RUNNING:
-    #         async_session = await anext(session_gen)
-    #         await add_task_to_scheduler(task_obj=task_obj, dao=StatisticsDao(async_session))
+    for task_obj in task_objects:
+        if task_obj.status == TaskStatus.RUNNING:
+            session_gen = get_session()
+            async_session = await anext(session_gen)
+            await add_task_to_scheduler(task_obj=task_obj, dao=StatisticsDao(async_session))
     
     scheduler.start()
     
