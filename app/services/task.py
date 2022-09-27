@@ -1,7 +1,10 @@
+from fastapi.exceptions import HTTPException
 import uuid
 from datetime import datetime
 
-from ..schemas.task import TaskIn, TaskInDB
+from sqlalchemy import false
+
+from ..schemas.task import TaskIn, TaskInDB, TaskStatus
 from ..db.dao.task import TaskDao
 from ..db.models import Task
 
@@ -22,3 +25,18 @@ async def get_all_tasks(task_dao: TaskDao) -> list[Task]:
 async def get_task_by_id(id: int, task_dao: TaskDao) -> Task:
     task = await task_dao.get(id=id)
     return task
+
+async def _toggle_task(task: Task, task_dao: TaskDao, task_status: TaskStatus)-> Task:
+    updated_task = await task_dao.update(obj_in={"status": task_status}, db_obj=task)
+    await task_dao.commit()
+    return updated_task
+
+async def disable_task(task: Task, task_dao: TaskDao)-> Task:
+    return await _toggle_task(task, task_dao, TaskStatus.STOPPED)
+    
+async def enable_task(task: Task, task_dao: TaskDao)-> Task:
+    return await _toggle_task(task, task_dao, TaskStatus.RUNNING)
+
+async def check_task_status(task: Task, expected: str) -> bool:
+    if task.status != expected:
+        return false

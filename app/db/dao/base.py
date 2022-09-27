@@ -21,7 +21,7 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         )
         return result.scalars().first()
 
-    async def get_many(self, *args, offset: int = 0, limit: int = 0, **kwargs) \
+    async def get_many(self, *args, offset: int = 0, limit: int = 100, **kwargs) \
             -> list[ModelType]:
 
         result = await self._session.execute(

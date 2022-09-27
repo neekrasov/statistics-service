@@ -22,8 +22,8 @@ class TaskOut(TaskInDB):
 
 class ShowTaskStatisticsIn(BaseModel):
     id: UUID
-    start: datetime
-    end: datetime
+    start: datetime | None = None
+    end: datetime | None = None
     
 class ShowTaskStatisticOut(TaskIn):
     id: UUID

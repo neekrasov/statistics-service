@@ -9,7 +9,7 @@ async def create_statistics(create_scheme: StatisticsInDB, stat_dao: StatisticsD
     await stat_dao.commit()
     return stat_obj
 
-async def get_stat_filtered_by_date(stat_dao: StatisticsDao, date_start, date_end) -> list[Statistics]:
-    stat_objects = await stat_dao.get_many(Statistics.created_at >= date_start, Statistics.created_at <= date_end)
+async def get_stat_filtered_by_date(stat_dao: StatisticsDao, date_start, date_end, task_id: uuid.UUID) -> list[Statistics]:
+    stat_objects = await stat_dao.get_many(Statistics.created_at >= date_start, Statistics.created_at <= date_end, task_id=task_id)
     return stat_objects
     

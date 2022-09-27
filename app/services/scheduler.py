@@ -1,6 +1,5 @@
 from typing import Tuple
 import uuid
-import asyncio
 from datetime import datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -12,7 +11,7 @@ from ..db.models.task import TaskStatus
 from ..db.base import get_session
 from .statistics import create_statistics
 from .parser import parser
-from .task import get_all_tasks
+from .task import get_all_tasks, disable_task
 from ..db.models import Task
 
 
@@ -28,13 +27,13 @@ async def add_task_to_scheduler(
     search_phrase = task_obj.search_phrase
     
     async def job():
-        return await create_search_task(task_obj, dao)
+        return await _create_search_task(task_obj, dao)
     
-    scheduler.add_job(job, trigger, id=str(uuid_), seconds=20, **kwargs)
+    scheduler.add_job(job, trigger, id=str(uuid_), seconds=10, **kwargs)
     return (uuid_, search_phrase)
 
 
-async def create_search_task(task_obj: Task, stat_dao: StatisticsDao) -> Statistics:
+async def _create_search_task(task_obj: Task, stat_dao: StatisticsDao) -> Statistics:
     records_count = await parser(task_obj.search_phrase)
     obj_in_db = StatisticsInDB(
         task_id=task_obj.id,
@@ -44,6 +43,9 @@ async def create_search_task(task_obj: Task, stat_dao: StatisticsDao) -> Statist
     stat_obj = await create_statistics(obj_in_db, stat_dao)
     return stat_obj
 
+async def remove_task(task: Task, task_dao: TaskDao) -> None:
+    scheduler.remove_job(str(task.id))
+    await disable_task(task, task_dao=task_dao)
 
 async def on_startup_sheduler_handler():
     session_gen2 = get_session()
