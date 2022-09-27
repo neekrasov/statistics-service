@@ -17,7 +17,8 @@ class Statistics(Base):
     created_at = Column(DateTime, nullable=False)
     
     def __repr__(self) -> str:
-        return f"Statistics.\n \
+        return f" \nStatistics.\n \
                 id: {self.id} \n \
                 task_id: {self.task_id} \n \
-                records_count: {self.records_count}"
+                records_count: {self.records_count} \n \
+                created_at : {self.created_at}"

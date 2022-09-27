@@ -18,3 +18,7 @@ async def create_task(in_scheme: TaskIn, task_dao: TaskDao):
 async def get_all_tasks(task_dao: TaskDao) -> list[Task]:
     task_objects = await task_dao.get_many(limit=100)
     return task_objects
+
+async def get_task_by_id(id: int, task_dao: TaskDao) -> Task:
+    task = await task_dao.get(id=id)
+    return task

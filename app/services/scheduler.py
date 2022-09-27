@@ -30,7 +30,7 @@ async def add_task_to_scheduler(
     async def job():
         return await create_search_task(task_obj, dao)
     
-    scheduler.add_job(job, trigger, id=str(uuid_), seconds=5, **kwargs)
+    scheduler.add_job(job, trigger, id=str(uuid_), seconds=20, **kwargs)
     return (uuid_, search_phrase)
 
 

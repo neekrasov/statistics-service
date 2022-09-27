@@ -14,5 +14,5 @@ class StatisticsInDB(StatisticsIn):
     task_id: UUID
     created_at: datetime
 
-class StatisticsOut(StatisticsInDB):
-    pass
+class StatisticsOut(StatisticsIn):
+    created_at: datetime
