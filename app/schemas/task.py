@@ -1,5 +1,5 @@
 from uuid import UUID
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from datetime import datetime
 from ..db.models.task import TaskStatus
 from .statistics import StatisticsInDB, StatisticsOut
@@ -24,6 +24,10 @@ class ShowTaskStatisticsIn(BaseModel):
     id: UUID
     start: datetime | None = None
     end: datetime | None = None
+    
+    @validator('start', 'end')
+    def validate_date_contain_z(cls, v):
+        return v.replace(tzinfo=None)
     
 class ShowTaskStatisticOut(TaskIn):
     id: UUID

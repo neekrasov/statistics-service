@@ -1,4 +1,3 @@
-from fastapi.exceptions import HTTPException
 import uuid
 from datetime import datetime
 
@@ -24,6 +23,10 @@ async def get_all_tasks(task_dao: TaskDao) -> list[Task]:
 
 async def get_task_by_id(id: int, task_dao: TaskDao) -> Task:
     task = await task_dao.get(id=id)
+    return task
+
+async def get_task_by_search_phrase(search_phrase: str, task_dao: TaskDao) -> Task:
+    task = await task_dao.get(search_phrase=search_phrase)
     return task
 
 async def _toggle_task(task: Task, task_dao: TaskDao, task_status: TaskStatus)-> Task:
