@@ -44,7 +44,8 @@ async def add_stat(
             content={
                 "detail": "A task with this search query already exists.",
                 "task_id": str(task.id)
-            }
+            },
+            status_code=400
         )
     task_obj = await create_task(task_in, task_dao)
     await add_task_to_scheduler(dao=stat_dao, task_obj=task_obj)

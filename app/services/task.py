@@ -1,8 +1,6 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import false
-
 from ..schemas.task import TaskIn, TaskInDB, TaskStatus
 from ..db.dao.task import TaskDao
 from ..db.models import Task
@@ -42,4 +40,4 @@ async def enable_task(task: Task, task_dao: TaskDao)-> Task:
 
 async def check_task_status(task: Task, expected: str) -> bool:
     if task.status != expected:
-        return false
+        return False
