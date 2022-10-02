@@ -8,6 +8,10 @@ from .statistics import StatisticsInDB, StatisticsOut
 class TaskIn(BaseModel):
     search_phrase: str
     
+    @validator('search_phrase')
+    def validate_phrase(cls, v):
+        return v.lower()
+    
     class Config:
         orm_mode=True
 
