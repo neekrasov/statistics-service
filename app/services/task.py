@@ -39,5 +39,4 @@ async def enable_task(task: Task, task_dao: TaskDao)-> Task:
     return await _toggle_task(task, task_dao, TaskStatus.RUNNING)
 
 async def check_task_status(task: Task, expected: str) -> bool:
-    if task.status != expected:
-        return False
+    return task.status != expected

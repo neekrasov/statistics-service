@@ -1,11 +1,10 @@
 import pytest
 from uuid import uuid4
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
 from app.schemas.task import ShowTaskStatisticsIn, TaskInDB
-from app.api.dependencies.task import get_task_dao
 from app.db.models.task import TaskStatus
+from app.db.dao import TaskDao
 
 
 @pytest.mark.asyncio
@@ -62,9 +61,7 @@ async def test_stop_stat_invalid_uuid(client: AsyncClient):
     assert result.status_code == 404
 
 @pytest.mark.asyncio
-async def test_stop_stat_already_stopped(client: AsyncClient, session: AsyncSession):
-    
-    task_dao = await get_task_dao(session=session)
+async def test_stop_stat_already_stopped(client: AsyncClient, task_dao: TaskDao):
     task_obj = await task_dao.save(TaskInDB(
         id = uuid4(),
         search_phrase="test",
@@ -77,8 +74,7 @@ async def test_stop_stat_already_stopped(client: AsyncClient, session: AsyncSess
     assert result.status_code == 400
     
 @pytest.mark.asyncio
-async def test_start_stat(client: AsyncClient, session: AsyncSession):
-    task_dao = await get_task_dao(session=session)
+async def test_start_stat(client: AsyncClient, task_dao: TaskDao):
     task_obj = await task_dao.save(TaskInDB(
         id = uuid4(),
         search_phrase="test",
