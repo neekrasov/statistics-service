@@ -1,6 +1,5 @@
 import uuid
 from fastapi import APIRouter, Depends, Response
-from fastapi.responses import JSONResponse
 from fastapi.exceptions import HTTPException
 
 from ...db.dao import TaskDao, StatisticsDao
@@ -40,9 +39,9 @@ async def add_stat(
 ):
     task = await get_task_by_search_phrase(search_phrase=task_in.search_phrase, task_dao=task_dao)
     if task:
-        return JSONResponse(
-            content={
-                "detail": "A task with this search query already exists.",
+        raise HTTPException(
+            detail={
+                "message": "A task with this search query already exists.",
                 "task_id": str(task.id)
             },
             status_code=400

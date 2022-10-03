@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     postgres_host: str
     postgres_db: str
     postgres_uri: str | None = None
+    parse_timeout: int = 10 # minutes as default
     
     
     @validator("postgres_uri", pre=True)
