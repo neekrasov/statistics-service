@@ -20,7 +20,7 @@ async def test_repeated_add_stat(client: AsyncClient):
     
     assert result.status_code == 400
     assert result.json()["detail"]
-    assert result.json()["task_id"]
+    assert result.json()["detail"]["task_id"]
     
 @pytest.mark.asyncio
 async def test_show_stat(client: AsyncClient):

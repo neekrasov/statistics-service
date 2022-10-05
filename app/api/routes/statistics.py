@@ -2,11 +2,10 @@ import uuid
 from fastapi import APIRouter, Depends, Response
 from fastapi.exceptions import HTTPException
 
+from ..deps import get_dao
 from ...db.dao import TaskDao, StatisticsDao
 from ...db.models.task import TaskStatus
 from ...schemas.task import ShowTaskStatisticsIn, ShowTaskStatisticOut, TaskIn, TaskAddOut
-from ..dependencies.task import get_task_dao
-from ..dependencies.statistics import get_stat_dao
 from ...services.scheduler import add_task_to_scheduler, remove_task
 from ...services.task import create_task, get_task_by_id, check_task_status, enable_task, get_task_by_search_phrase
 from ...services.statistics import get_stat_filtered_by_date
@@ -17,8 +16,8 @@ router = APIRouter(prefix='', tags=['statistics'])
 @router.post("/stat", response_model=ShowTaskStatisticOut)
 async def show_stat(
     data_in: ShowTaskStatisticsIn,
-    task_dao: TaskDao = Depends(get_task_dao),
-    stat_dao: StatisticsDao = Depends(get_stat_dao)
+    task_dao: TaskDao = Depends(get_dao(TaskDao)),
+    stat_dao: StatisticsDao = Depends(get_dao(StatisticsDao))
 ):
     
     task = await get_task_by_id(id=data_in.id, task_dao=task_dao)
@@ -34,8 +33,8 @@ async def show_stat(
 @router.post("/add", response_model=TaskAddOut)
 async def add_stat(
     task_in: TaskIn, 
-    task_dao: TaskDao = Depends(get_task_dao),
-    stat_dao: StatisticsDao = Depends(get_stat_dao)
+    task_dao: TaskDao = Depends(get_dao(TaskDao)),
+    stat_dao: StatisticsDao = Depends(get_dao(StatisticsDao))
 ):
     task = await get_task_by_search_phrase(search_phrase=task_in.search_phrase, task_dao=task_dao)
     if task:
@@ -53,7 +52,7 @@ async def add_stat(
 @router.post("/stop/{id}")
 async def stop_stat(
     id: uuid.UUID,
-    task_dao: TaskDao = Depends(get_task_dao)
+    task_dao: TaskDao = Depends(get_dao(TaskDao))
 ):
     task = await get_task_by_id(id, task_dao)
     if not task:
@@ -75,8 +74,8 @@ async def stop_stat(
 @router.post("/start/{id}")
 async def start_stat(
     id: uuid.UUID,
-    task_dao: TaskDao = Depends(get_task_dao),
-    stat_dao: StatisticsDao = Depends(get_stat_dao)
+    task_dao: TaskDao = Depends(get_dao(TaskDao)),
+    stat_dao: StatisticsDao = Depends(get_dao(StatisticsDao))
 ):
     task = await get_task_by_id(id, task_dao)
     if not task:

@@ -4,12 +4,11 @@ from uuid import uuid4
 from httpx import AsyncClient
 import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncSession
-from app.db.base import engine, get_session
+from app.db.base import engine
+from app.api.deps import get_session, get_dao
 from app.db.models.task import TaskStatus
 from app.db.models import Statistics, Task
 from app.main import app
-from app.api.dependencies.task import get_task_dao
-from app.api.dependencies.statistics import get_stat_dao
 from app.db.dao import TaskDao, StatisticsDao
 from app.schemas.statistics import StatisticsInDB
 from app.schemas.task import TaskInDB
@@ -33,17 +32,15 @@ async def session(connection: AsyncConnection):
         
 @pytest_asyncio.fixture()
 async def task_dao(session: AsyncSession) -> TaskDao:
-    return await get_task_dao(session)
+    return get_dao(TaskDao)(session)
 
 @pytest_asyncio.fixture()
 async def stat_dao(session: AsyncSession) -> StatisticsDao:
-    return await get_stat_dao(session)
+    return get_dao(StatisticsDao)(session)
 
 @pytest_asyncio.fixture(autouse=True)
-async def override_dependency(session: AsyncSession, task_dao: TaskDao, stat_dao: StatisticsDao):
+async def override_dependency(session: AsyncSession):
     app.dependency_overrides[get_session] = lambda: session
-    app.dependency_overrides[get_task_dao] = lambda: task_dao
-    app.dependency_overrides[get_stat_dao] = lambda: stat_dao
     
 @pytest_asyncio.fixture()
 async def clear_db(task_dao: TaskDao):

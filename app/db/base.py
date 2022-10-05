@@ -7,7 +7,3 @@ settings = get_settings()
 engine = create_async_engine(settings.postgres_uri, echo=True)
 
 SessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
-
-async def get_session() -> AsyncSession:
-    async with SessionLocal() as session:
-        yield session

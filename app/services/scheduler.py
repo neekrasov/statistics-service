@@ -8,7 +8,7 @@ from ..db.dao.statistics import StatisticsDao
 from ..db.dao.task import TaskDao
 from ..db.models.statistics import Statistics
 from ..db.models.task import TaskStatus
-from ..db.base import get_session
+from ..api.deps import get_session
 from .statistics import create_statistics
 from .parser import parser
 from .task import get_all_tasks, disable_task
