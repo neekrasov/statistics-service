@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+service SchedulerWorker {
+    rpc add_task (AddTaskRequest) returns (ResponseStub) {}
+    rpc remove_task (TaskIdRequest) returns (RemoveResponse) {}
+}
+
+message AddTaskRequest {
+    bytes task_obj = 1;
+    int32 timeout = 2;
+}
+
+message ResponseStub {
+}
+
+message TaskIdRequest {
+    string task_id = 1;
+}
+
+message RemoveResponse {
+    bool success = 1;
+}

@@ -1,42 +1,48 @@
 import uuid
 from datetime import datetime
 
-from ..schemas.task import TaskIn, TaskInDB, TaskStatus
+from ..schemas.task import TaskIn, TaskInDB, TaskStatus, Task
 from ..db.dao.task import TaskDao
-from ..db.models import Task
 
-async def create_task(in_scheme: TaskIn, task_dao: TaskDao):
-    obj_in_db = TaskInDB(
-        **in_scheme.dict(),
-        id = uuid.uuid4(),
-        created_at = datetime.utcnow(),
-    )
-    task_obj = await task_dao.save(obj_in_db)
-    await task_dao.commit()
-    return task_obj
 
-async def get_all_tasks(task_dao: TaskDao) -> list[Task]:
-    task_objects = await task_dao.get_many(limit=100)
-    return task_objects
+class TaskService:
+    def __init__(self, task_dao: TaskDao):
+        self._task_dao = task_dao
 
-async def get_task_by_id(id: int, task_dao: TaskDao) -> Task:
-    task = await task_dao.get(id=id)
-    return task
+    async def create_task(self, in_scheme: TaskIn):
+        obj_in_db = TaskInDB(
+            **in_scheme.dict(),
+            id=uuid.uuid4(),
+            created_at=datetime.utcnow(),
+        )
+        task_obj = await self._task_dao.save(obj_in_db)
+        await self._task_dao.commit()
+        return Task.from_orm(task_obj)
 
-async def get_task_by_search_phrase(search_phrase: str, task_dao: TaskDao) -> Task:
-    task = await task_dao.get(search_phrase=search_phrase)
-    return task
+    async def get_task_by_id(self, id: int) -> Task:
+        task = await self._task_dao.get(id=id)
+        return Task.from_orm(task) if task else None
 
-async def _toggle_task(task: Task, task_dao: TaskDao, task_status: TaskStatus)-> Task:
-    updated_task = await task_dao.update(obj_in={"status": task_status}, db_obj=task)
-    await task_dao.commit()
-    return updated_task
+    async def get_task_by_search_phrase(self, search_phrase: str) -> Task:
+        task = await self._task_dao.get(search_phrase=search_phrase)
+        return Task.from_orm(task) if task else None
 
-async def disable_task(task: Task, task_dao: TaskDao)-> Task:
-    return await _toggle_task(task, task_dao, TaskStatus.STOPPED)
-    
-async def enable_task(task: Task, task_dao: TaskDao)-> Task:
-    return await _toggle_task(task, task_dao, TaskStatus.RUNNING)
+    async def _toggle_task(self, task: Task, task_status: TaskStatus) -> Task:
+        updated_task = await self._task_dao.update(
+            obj_in={"status": task_status}, id=str(task.id)
+        )
+        await self._task_dao.commit()
+        return updated_task
 
-async def check_task_status(task: Task, expected: str) -> bool:
-    return task.status != expected
+    async def disable_task(self, task: Task) -> Task:
+        return await self._toggle_task(task, TaskStatus.STOPPED)
+
+    async def enable_task(self, task: Task) -> Task:
+        return await self._toggle_task(task, TaskStatus.RUNNING)
+
+    async def check_task_status(
+        self,
+        task: Task,
+        expected_status: str,
+    ) -> bool:
+        return task.status != expected_status

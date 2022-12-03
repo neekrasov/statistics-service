@@ -15,14 +15,14 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self._session = session
 
     async def get(self, *args, **kwargs) -> ModelType | None:
-
         result = await self._session.execute(
             select(self._model).filter(*args).filter_by(**kwargs)
         )
         return result.scalars().first()
 
-    async def get_many(self, *args, offset: int = 0, limit: int = 100, **kwargs) \
-            -> list[ModelType]:
+    async def get_many(
+        self, *args, offset: int = 0, limit: int = 100, **kwargs
+    ) -> list[ModelType]:
 
         result = await self._session.execute(
             select(self._model)
@@ -41,11 +41,11 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             **kwargs
     ) -> ModelType | None:
 
-        db_obj = db_obj or await self.get(self._session, **kwargs)
-        
+        db_obj = db_obj or await self.get(**kwargs)
+
         if db_obj is not None:
             obj_data = db_obj.__dict__
-            
+
             if isinstance(obj_in, dict):
                 update_data = obj_in
             else:
@@ -54,7 +54,7 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                 if field in update_data:
                     setattr(db_obj, field, update_data[field])
             self._session.add(db_obj)
-            
+
         return db_obj
 
     async def delete(

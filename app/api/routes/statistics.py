@@ -1,96 +1,124 @@
 import uuid
 from fastapi import APIRouter, Depends, Response
 from fastapi.exceptions import HTTPException
+from app.db.models.task import TaskStatus
+from app.schemas.task import (
+    ShowTaskStatisticsIn,
+    ShowTaskStatisticOut,
+    TaskIn,
+    TaskAddOut,
+)
+from app.services import TaskService, StatisticsService, SchedulerService
+from app.core.di.stubs import (
+    provide_task_service_stub,
+    provide_stat_service_stub,
+    provide_scheduler_service_stub,
+)
 
-from ..deps import get_dao
-from ...db.dao import TaskDao, StatisticsDao
-from ...db.models.task import TaskStatus
-from ...schemas.task import ShowTaskStatisticsIn, ShowTaskStatisticOut, TaskIn, TaskAddOut
-from ...services.scheduler import add_task_to_scheduler, remove_task
-from ...services.task import create_task, get_task_by_id, check_task_status, enable_task, get_task_by_search_phrase
-from ...services.statistics import get_stat_filtered_by_date
+router = APIRouter(prefix="", tags=["statistics"])
 
-
-router = APIRouter(prefix='', tags=['statistics'])
 
 @router.post("/stat", response_model=ShowTaskStatisticOut)
 async def show_stat(
     data_in: ShowTaskStatisticsIn,
-    task_dao: TaskDao = Depends(get_dao(TaskDao)),
-    stat_dao: StatisticsDao = Depends(get_dao(StatisticsDao))
+    task_service: TaskService = Depends(provide_task_service_stub),
+    stat_service: StatisticsService = Depends(provide_stat_service_stub),
 ):
-    
-    task = await get_task_by_id(id=data_in.id, task_dao=task_dao)
+
+    task = await task_service.get_task_by_id(id=data_in.id)
     if not task:
         raise HTTPException(
             status_code=404,
             detail="Task with this id not found"
         )
-    stats = await get_stat_filtered_by_date(stat_dao=stat_dao, date_start=data_in.start, date_end=data_in.end, task_id=task.id)
+    stats = await stat_service.get_stat_filtered_by_date(
+        date_start=data_in.start, date_end=data_in.end, task_id=task.id
+    )
     task.statistics = stats
     return task
 
+
 @router.post("/add", response_model=TaskAddOut)
 async def add_stat(
-    task_in: TaskIn, 
-    task_dao: TaskDao = Depends(get_dao(TaskDao)),
-    stat_dao: StatisticsDao = Depends(get_dao(StatisticsDao))
+    task_in: TaskIn,
+    task_service: TaskService = Depends(provide_task_service_stub),
+    stat_service: StatisticsService = Depends(provide_stat_service_stub),
+    scheduler_service: SchedulerService = Depends(
+        provide_scheduler_service_stub
+    )
 ):
-    task = await get_task_by_search_phrase(search_phrase=task_in.search_phrase, task_dao=task_dao)
+    task = await task_service.get_task_by_search_phrase(task_in.search_phrase)
     if task:
         raise HTTPException(
             detail={
                 "message": "A task with this search query already exists.",
-                "task_id": str(task.id)
+                "task_id": str(task.id),
             },
-            status_code=400
+            status_code=400,
         )
-    task_obj = await create_task(task_in, task_dao)
-    await add_task_to_scheduler(dao=stat_dao, task_obj=task_obj)
+    task_obj = await task_service.create_task(task_in)
+    await scheduler_service.add_task(task_obj=task_obj)
     return task_obj
+
 
 @router.post("/stop/{id}")
 async def stop_stat(
     id: uuid.UUID,
-    task_dao: TaskDao = Depends(get_dao(TaskDao))
+    task_service: TaskService = Depends(provide_task_service_stub),
+    scheduler_service: SchedulerService = Depends(
+        provide_scheduler_service_stub
+    )
 ):
-    task = await get_task_by_id(id, task_dao)
+    task = await task_service.get_task_by_id(id)
     if not task:
         raise HTTPException(
             status_code=404,
             detail="Task with this id not found"
         )
-    task_status_check = await check_task_status(task, TaskStatus.STOPPED)
+
+    task_status_check = await task_service.check_task_status(
+        task=task,
+        expected_status=TaskStatus.STOPPED
+    )
     if not task_status_check:
         raise HTTPException(
             status_code=400,
-            detail=f"Task status alredy {task.status.name.lower()}"
+            detail=f"Task status already {task.status.name.lower()}"
         )
-        
-    await remove_task(task, task_dao)
+
+    status = await scheduler_service.remove_task(task.id)
+    if status:
+        await task_service.disable_task(task)
 
     return Response(status_code=200)
+
 
 @router.post("/start/{id}")
 async def start_stat(
     id: uuid.UUID,
-    task_dao: TaskDao = Depends(get_dao(TaskDao)),
-    stat_dao: StatisticsDao = Depends(get_dao(StatisticsDao))
+    task_service: TaskService = Depends(provide_task_service_stub),
+    scheduler_service: SchedulerService = Depends(
+        provide_scheduler_service_stub
+    )
 ):
-    task = await get_task_by_id(id, task_dao)
+    task = await task_service.get_task_by_id(id)
     if not task:
         raise HTTPException(
             status_code=404,
             detail="Task with this id not found"
         )
-    task_status_check = await check_task_status(task, TaskStatus.RUNNING)
+
+    task_status_check = await task_service.check_task_status(
+        task=task,
+        expected_status=TaskStatus.RUNNING,
+    )
     if not task_status_check:
         raise HTTPException(
             status_code=400,
-            detail=f"Task status alredy {task.status.name.lower()}"
+            detail=f"Task status already {task.status.name.lower()}"
         )
-        
-    await enable_task(task, task_dao)
-    await add_task_to_scheduler(task, stat_dao)
+
+    await task_service.enable_task(task)
+    await scheduler_service.add_task(task)
 
     return Response(status_code=200)

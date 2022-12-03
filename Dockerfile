@@ -1,4 +1,4 @@
-FROM python:3.10.6
+FROM python:3.11
 
 WORKDIR /usr/src/statsistics_api
 

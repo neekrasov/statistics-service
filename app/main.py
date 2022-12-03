@@ -1,13 +1,19 @@
 from fastapi import FastAPI
-from .api.router import router
-from .core.settings import get_settings
-from .services.scheduler import on_startup_sheduler_handler
+from app.api.router import router
+from app.core.settings import get_settings
+from app.core.di.setup import setup_di
+
 
 def create_app() -> FastAPI:
     settings = get_settings()
     app = FastAPI(title=settings.title, description=settings.descriprion)
-    app.add_event_handler("startup", on_startup_sheduler_handler)
+
+    async def startup():
+        return await setup_di(app)
+
+    app.add_event_handler("startup", startup)
     app.include_router(router)
+
     return app
 
 
