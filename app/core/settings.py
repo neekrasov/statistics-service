@@ -7,24 +7,27 @@ class Settings(BaseSettings):
     title: str = "Stats-service"
     descriprion: str = "Service for displaying statistics for \
         a specific search query on Wildberries"
-    parse_url: str
+
+    # Database
     postgres_user: str
     postgres_password: SecretStr
     postgres_host: str
     postgres_db: str
     postgres_uri: str | None = None
+
+    # Parser
     parse_timeout: int = 1  # minutes as default
+    parse_url: str
 
-    redis_host: str
-    redis_port: int
-    redis_uri: str | None = None
-
-    worker_socket: str = "localhost:50051"
+    # Worker
+    worker_host: str
+    worker_port: int
+    worker_socket: str = None
 
     @validator("postgres_uri", pre=True)
     def validate_postgres_uri(
         cls, v: str | None, values: dict[str, Any]
-    ) -> str:  # noqa
+    ) -> str:
         if isinstance(v, str):
             return v
         password: SecretStr = values.get("postgres_password", SecretStr(""))
@@ -36,18 +39,16 @@ class Settings(BaseSettings):
             db=values.get("postgres_db"),
         )
 
-    @validator("redis_uri", pre=True)
-    def validate_redis_uri(cls, v: str | None, values: dict[str, Any]) -> str:  # noqa
+    @validator("worker_socket", pre=True)
+    def validate_worker_socket(
+        cls, v: str | None, values: dict[str, Any]
+    ) -> str:
         if isinstance(v, str):
             return v
-        return "{scheme}://{host}:{port}".format(
-            scheme="redis",
-            host=values.get("redis_host"),
-            port=values.get("redis_port"),
-        )
+        return f"{values.get('worker_host')}:{values.get('worker_port')}"
 
     class Config:
-        env_file = ".env.dev"
+        env_file = ".env"
 
 
 @lru_cache()

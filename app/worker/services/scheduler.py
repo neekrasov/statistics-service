@@ -9,9 +9,9 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from app.core.di.providers import provide_statistics_service
 from app.db.models import Task, TaskStatus
 from app.db.dao import StatisticsDao
-from app.worker.parser import parser
 from app.schemas.statistics import StatisticsInDB, Statistics
 from app.core.settings import get_settings
+from .parser import parser
 
 settings = get_settings()
 

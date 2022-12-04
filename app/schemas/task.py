@@ -2,7 +2,7 @@ from uuid import UUID
 from pydantic import BaseModel, validator
 from datetime import datetime
 from ..db.models.task import TaskStatus
-from .statistics import StatisticsInDB, StatisticsOut, Statistics
+from .statistics import StatisticsInDB, Statistics
 
 
 class TaskIn(BaseModel):

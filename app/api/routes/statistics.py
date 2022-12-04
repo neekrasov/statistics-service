@@ -1,19 +1,17 @@
 import uuid
+
 from fastapi import APIRouter, Depends, Response
 from fastapi.exceptions import HTTPException
-from app.db.models.task import TaskStatus
-from app.schemas.task import (
-    ShowTaskStatisticsIn,
-    ShowTaskStatisticOut,
-    TaskIn,
-    TaskAddOut,
-)
-from app.services import TaskService, StatisticsService, SchedulerService
+
 from app.core.di.stubs import (
-    provide_task_service_stub,
-    provide_stat_service_stub,
     provide_scheduler_service_stub,
+    provide_stat_service_stub,
+    provide_task_service_stub
 )
+from app.db.models.task import TaskStatus
+from app.schemas.task import (ShowTaskStatisticOut, ShowTaskStatisticsIn,
+                              TaskAddOut, TaskIn)
+from app.services import SchedulerService, StatisticsService, TaskService
 
 router = APIRouter(prefix="", tags=["statistics"])
 

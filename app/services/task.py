@@ -19,7 +19,7 @@ class TaskService:
         await self._task_dao.commit()
         return Task.from_orm(task_obj)
 
-    async def get_task_by_id(self, id: int) -> Task:
+    async def get_task_by_id(self, id: uuid.UUID) -> Task:
         task = await self._task_dao.get(id=id)
         return Task.from_orm(task) if task else None
 
@@ -43,6 +43,6 @@ class TaskService:
     async def check_task_status(
         self,
         task: Task,
-        expected_status: str,
+        expected_status: TaskStatus,
     ) -> bool:
         return task.status != expected_status

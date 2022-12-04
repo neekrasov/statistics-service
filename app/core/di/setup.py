@@ -1,9 +1,13 @@
 from fastapi import FastAPI
+
+from app.core.settings import Settings
+
 from .providers import (
-    provide_session,
+    async_session,
     provide_task_service,
     provide_statistics_service,
     provide_scheduler_service,
+    provide_worker_channel,
 )
 
 from .stubs import (
@@ -14,11 +18,9 @@ from .stubs import (
     provide_scheduler_service_stub,
 )
 
-from app.worker.client_provider import provide_worker_channel
 
-
-async def setup_di(app: FastAPI) -> None:
-    context_session = provide_session()
+def setup_di(app: FastAPI, settings: Settings) -> None:
+    context_session = async_session(settings.postgres_uri)
 
     app.dependency_overrides = {
         provide_session_stub: context_session,

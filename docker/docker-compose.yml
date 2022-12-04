@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  database:
+    container_name: database
+    image: postgres:14
+    volumes:
+      - statistics_postgres_data:/var/lib/postgresql/data
+    ports:
+      - ${HOST_POSTGRES_PORT}:${POSTGRES_PORT}
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+  
+  api:
+    container_name: statistics_api
+    build: 
+      context: ..
+      dockerfile: docker/Dockerfile
+    command: make run-backend
+    ports:
+      - '8000:8000'
+    depends_on:
+      - database
+  
+  worker:
+    container_name: statistics_worker
+    build: 
+      context: ..
+      dockerfile: docker/Dockerfile
+    command: make run-worker
+    ports:
+      - ${WORKER_PORT}:${WORKER_PORT}
+    depends_on:
+      - database
+      - api
+
+
+volumes:
+  statistics_postgres_data:

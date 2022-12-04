@@ -1,7 +1,5 @@
 import asyncio
 from logging.config import fileConfig
-import pathlib
-import sys
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
@@ -9,13 +7,10 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 from alembic import context
-
-sys.path.append(str(pathlib.Path(__file__).resolve().parents[3]))
-
 from app.core.settings import get_settings
 from app.db.models.base import Base
 
-settings = get_settings(_env_file="../../.env.dev")
+settings = get_settings()
 config = context.config
 
 if config.config_file_name is not None:

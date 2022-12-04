@@ -23,7 +23,6 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     async def get_many(
         self, *args, offset: int = 0, limit: int = 100, **kwargs
     ) -> list[ModelType]:
-
         result = await self._session.execute(
             select(self._model)
             .filter(*args)
@@ -59,8 +58,8 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     async def delete(
             self, *args, db_obj: ModelType | None = None, **kwargs
-    ) -> ModelType:
-        db_obj = db_obj or await self.get(self._session, *args, **kwargs)
+    ) -> ModelType | None:
+        db_obj = db_obj or await self.get(*args, **kwargs)
         await self._session.delete(db_obj)
         return db_obj
 

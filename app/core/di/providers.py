@@ -1,18 +1,19 @@
 from typing import Callable, Type
+
 from fastapi import Depends
+from grpc.aio import Channel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.settings import get_settings
 from app.db.base import async_session
-from app.db.dao import BaseDAO, TaskDao, StatisticsDao
-from app.services import TaskService, StatisticsService, SchedulerService
+from app.db.dao import BaseDAO, StatisticsDao, TaskDao
+from app.services import SchedulerService, StatisticsService, TaskService
+from app.worker.client_provider import provide_worker_channel  # noqa
 
 from .stubs import provide_session_stub, provide_worker_channel_stub
-from grpc.aio import Channel
 
 
-def provide_session():
-    return async_session(get_settings().postgres_uri)
+def provide_session(uri: str):
+    return async_session(uri)
 
 
 def get_dao(
