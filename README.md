@@ -28,7 +28,7 @@
 
 2. Создать файл .env на примере .env.example .
 ```
-~$ cp .env.example .env
+~$ cp .env.example docker/.env
 ```
 
 3. Поднять контейнеры.

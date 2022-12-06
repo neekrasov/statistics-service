@@ -21,8 +21,6 @@ grpcio-tools = "^1.51.1"
 apscheduler = "^3.9.1.post1"
 gunicorn = "^20.1.0"
 orjson = "^3.8.3"
-flake8-print = "^5.0.0"
-isort = "^5.10.1"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^6.0.0"
@@ -36,6 +34,8 @@ pytest-mock = "^3.9.0"
 mypy = "^0.991"
 bandit = "^1.7.4"
 vulture = "^2.6"
+flake8-print = "^5.0.0"
+isort = "^5.10.1"
 
 
 [build-system]
